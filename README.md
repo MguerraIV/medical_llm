@@ -29,9 +29,12 @@ Este repositório contém os artefatos desenvolvidos para a pesquisa de TCC inti
 
 A pesquisa integra e sobrepõe datasets distintos do tipo **disease-symptom**, com sintomas codificados como vetores binários (`0` ou `1`) e uma coluna-alvo com o diagnóstico correspondente:
 
-- **OpenML Medical Datasets**  
-- **SymCAT** – Diagnósticos mapeados a partir de sintomas com base em prevalência.
-- **Disease Symptom Knowledge Database** – Relações estruturadas entre doenças e sintomas.
+- **University of Columbia Disease Symptom Database**  - Base de conhecimento com associações entre doenças e sintomas, gerada por um método automatizado com base em informações extraídas de sumários de alta hospitalar em formato textual de pacientes do Hospital Presbiteriano de Nova York, admitidos durante o ano de 2004. 
+
+- **Symbi Predict** – Uma coleção abrangente de dados estruturados que relacionam sintomas a diversas doenças, meticulosamente curada para facilitar pesquisas e o desenvolvimento de análises preditivas em saúde. Inspirado na metodologia empregada por instituições renomadas como os Centers for Disease Control and Prevention (CDC)
+
+- **Disease Symptom Knowledge Database** – O conjunto de dados contém nomes de doenças juntamente com os sintomas apresentados pelo respectivo paciente. Há um total de 773 doenças únicas e 377 sintomas, com aproximadamente 246.000 linhas. O conjunto de dados foi gerado artificialmente, preservando a severidade dos sintomas e a probabilidade de ocorrência das doenças.
+
 - *(Suporte secundário: MIMIC-III, eICU, ClinicalTrials – referenciados para futura extensão)*
 
 ---
@@ -41,21 +44,26 @@ A pesquisa integra e sobrepõe datasets distintos do tipo **disease-symptom**, c
 ### ✅ 1. Coleta, Limpeza e Unificação
 - Normalização de nomes de sintomas e doenças via **SciSpacy** + **UMLS**.
 - Engenharia de features para harmonização inter-base.
-- Enriquecimento semântico com descrições e fatores de risco (via web scraping da [Mayo Clinic](https://www.mayoclinic.org/)).
+- Enriquecimento semântico com descrições e fatores de risco (via web scraping da [Mayo Clinic](https://www.mayoclinic.org/) e **SciSpacy** + **UMLS**).
 
 ### ✅ 2. Preenchimento com BioGPT
 - Doenças sem descrição foram completadas via geração sintética com **BioGPT**.
 - A geração abrangeu:
   - Definições clínicas
   - Fatores de risco
-  - Contexto epidemiológico
 
 ### ✅ 3. Preparação dos Dados para Fine-Tuning
 - Construção de pares `input-text` → `diagnóstico esperado`.
 - Exemplo:
   ```
-  Input: Patient presents with fatigue, low-grade fever, muscle pain and dry cough.
-  Output: Influenza
+  Input: The pacient presents the following symptoms: anxiety and nervousness, breathing fast, chest tightness.
+
+  Output: 
+    Diagnosis: Panic Disorder.
+
+    Description: A type of anxiety disorder characterized by unexpected panic attacks that last minutes or, rarely, hours. Panic attacks begin with intense apprehension, fear or terror and, often, a feeling of impending doom. Symptoms experienced during a panic attack include dyspnea or sensations of being smothered; dizziness, loss of balance or faintness; choking sensations; palpitations or accelerated heart rate; shakiness; sweating; nausea or other form of abdominal distress; depersonalization or derealization; paresthesias; hot flashes or chills; chest discomfort or pain; fear of dying and fear of not being in control of oneself or going crazy. Agoraphobia may also develop. Similar to other anxiety disorders, it may be inherited as an autosomal dominant trait.
+
+    Risk factors: Symptoms of panic disorder often start in the late teens or early adulthood and affect more women than men. Factors that may increase the risk of developing panic attacks or panic disorder include: Family history of panic attacks or panic disorderMajor life stress, such as the death or serious illness of a loved oneA traumatic event, such as sexual assault or a serious accidentMajor changes in your life, such as a divorce or the addition of a babySmoking or excessive caffeine intakeHistory of childhood physical or sexual abuse.
   ```
 - Tokenização com tokenizer do **BioGPT**.
 
@@ -74,8 +82,8 @@ A pesquisa integra e sobrepõe datasets distintos do tipo **disease-symptom**, c
 - **Paradigma de ajuste**: Fine-tuning supervisionado
 - **Hiperparâmetros principais**:
   - Learning rate: `5e-5`
-  - Batch size: `16`
-  - Epochs: `5`
+  - Batch size: `3`
+  - Epochs: `3`
 
 ---
 
