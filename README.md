@@ -16,12 +16,12 @@ Este repositório contém os artefatos desenvolvidos para a pesquisa de TCC inti
 📁 medical_llm/
 │
 ├── 📒 1_data_preprocessing.ipynb     # Pré-processamento, unificação e enriquecimento dos dados
-├── 📒 2_data_completion_biogpt.ipynb # Geração de dados sintéticos com BioGPT
+├── 📒 2_data_completion.ipynb        # Geração de dados sintéticos e enriquecimento dos dados
 ├── 📒 3_model_training.ipynb         # Preparação dos pares texto-alvo, tokenização e fine-tuning
 ├── 📂 data/                          # Datasets originais e processados
 ├── 📂 utils/                         # Scripts auxiliares (tokenização, limpeza, etc.)
-├── Requirements.txt                  # Bibliotecas necessárias para o projeto
-└── README.md                        # Este arquivo
+├── requirements.txt                   # Bibliotecas necessárias para o projeto
+└── README.md                          # Este arquivo
 ```
 
 ---
