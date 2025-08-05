@@ -20,6 +20,7 @@ Este repositório contém os artefatos desenvolvidos para a pesquisa de TCC inti
 ├── 📒 3_model_training.ipynb         # Preparação dos pares texto-alvo, tokenização e fine-tuning
 ├── 📂 data/                          # Datasets originais e processados
 ├── 📂 utils/                         # Scripts auxiliares (tokenização, limpeza, etc.)
+├── Requirements.txt                  # Bibliotecas necessárias para o projeto
 └── README.md                        # Este arquivo
 ```
 
