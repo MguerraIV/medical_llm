@@ -1,83 +1,94 @@
+import os
 import pandas as pd
-from transformers import pipeline, set_seed
-from transformers import BioGptTokenizer, BioGptForCausalLM
-from datasets import Dataset
-from transformers import AutoTokenizer
 import torch
+from transformers import (
+    BioGptTokenizer, BioGptForCausalLM, TrainingArguments, Trainer,
+    DataCollatorForLanguageModeling, pipeline, set_seed
+)
+from datasets import Dataset
 
-#importando dataset unido e padronizado
-merged_dataset = pd.read_csv("./data/merged_dataset.csv")
-merged_dataset.drop(columns=["Unnamed: 0"], inplace=True)
+# ---------------------------
+# 🔧 Configurações iniciais
+# ---------------------------
+MODEL_NAME = "microsoft/biogpt"
+MODEL_OUTPUT_DIR = "biogpt-finetuned-symptom-diagnosis"
+SEED = 42
+MAX_LENGTH = 512
+BATCH_SIZE = 6  
+EPOCHS = 5      
+LEARNING_RATE = 5e-5
 
-#função para geração dos pares na base
-COLUNAS = merged_dataset.columns
+set_seed(SEED)
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"Usando dispositivo: {device}")
+
+# ---------------------------
+# 📥 Carregamento e preparação do dataset
+# ---------------------------
+print("Lendo dataset...")
+df = pd.read_csv("./data/merged_dataset.csv")
+df.drop(columns=["Unnamed: 0"], inplace=True)
+
+COLUNAS = df.columns
+
 def gerar_pares(row):
-    # Geração do input com base nos sintomas marcados como 1
     sintomas = [col.replace("_", " ") for col in COLUNAS if row[col] == 1]
     input_text = f"The pacient presents the following symptoms: {', '.join(sintomas)}."
-
-    # Geração do output com diagnóstico + descrição + fatores de risco
     output_text = f'''
-        Diagnosis: {row['diseases']}.\n
-        Description: {row['diseases_description']}.\n
+        Diagnosis: {row['diseases']}.
+
+        Description: {row['diseases_description']}.
+
         Risk factors: {row['disease_risk_factors']}.
     '''
-    
-    return {"input": input_text, "output": output_text} #retorno do par gerado
+    return {"input": input_text.strip(), "output": output_text.strip()}
 
-#agora é só ler a base e aplicar a geração dos pares
-caso_diagnostico = merged_dataset.apply(gerar_pares, axis=1).tolist()
-
-#código exemplo para a utilização do modelo BioGPT
-model = BioGptForCausalLM.from_pretrained("microsoft/biogpt") #instanciando o modelo
-
-#movendo o modelo para a gpu do sistema (Nvidia RTX 3050)
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = model.to(device)
-
-tokenizer = BioGptTokenizer.from_pretrained("microsoft/biogpt") #instanciando o tokenizer
-generator = pipeline('text-generation', model=model, tokenizer=tokenizer) #criando o gerador de texto
-set_seed(42) #configurando semente aleatória
-
-#cria dataset Hugging Face com os pares
+caso_diagnostico = df.apply(gerar_pares, axis=1).tolist()
 dataset = Dataset.from_list(caso_diagnostico)
-print(dataset) #dataset preparado
 
-#separando treino/validação
+# ---------------------------
+# 🔀 Divisão treino/validação
+# ---------------------------
 dataset = dataset.train_test_split(test_size=0.15)
-train_dataset = dataset['train']
-eval_dataset = dataset['test']
+train_dataset = dataset["train"]
+eval_dataset = dataset["test"]
 
-#como o BioGPT é causal LM (autogerativo), vamos concatenar input + output e treinar o modelo para prever
-def tokenize_function(example): #função para tokenizar os dados antes do treinamento
+# ---------------------------
+# 🔠 Tokenização
+# ---------------------------
+print("Carregando tokenizer e modelo base...")
+tokenizer = BioGptTokenizer.from_pretrained(MODEL_NAME)
+model = BioGptForCausalLM.from_pretrained(MODEL_NAME).to(device)
+
+def tokenize_function(example):
     prompt = example["input"] + "\n" + example["output"]
-    return tokenizer(prompt, truncation=True, padding="max_length", max_length=512)
+    return tokenizer(prompt, truncation=True, padding="max_length", max_length=MAX_LENGTH)
 
-#dados tokenizados
 tokenized_train = train_dataset.map(tokenize_function)
 tokenized_eval = eval_dataset.map(tokenize_function)
 
-#configurando os dados do treinamento
-from transformers import TrainingArguments, Trainer, DataCollatorForLanguageModeling
-
+# ---------------------------
+# ⚙️ Configuração de treinamento
+# ---------------------------
 training_args = TrainingArguments(
-    output_dir="./biogpt-finetuned",
-    evaluation_strategy="epoch", #estratégia de treinamento por épocas
-    learning_rate=5e-5, #taxa de aprendizagem do modelo
-    per_device_train_batch_size=3, #tamanho do batch de treino
-    per_device_eval_batch_size=3, #tamanho do batch de validacao
-    num_train_epochs=3, #numero de epocas de treino
-    weight_decay=0.01, #taxa de decaimento dos pesos
+    output_dir=MODEL_OUTPUT_DIR,
+    evaluation_strategy="epoch",
+    learning_rate=LEARNING_RATE,
+    per_device_train_batch_size=BATCH_SIZE,
+    per_device_eval_batch_size=BATCH_SIZE,
+    num_train_epochs=EPOCHS,
+    weight_decay=0.01,
     save_total_limit=2,
-    logging_dir='./logs',
-    fp16=True,
+    logging_dir="./logs",
     logging_steps=10,
+    fp16=torch.cuda.is_available(),  # usa float16 se possível
+    gradient_accumulation_steps=2,   # simula batch_size de 12
+    load_best_model_at_end=True,
+    report_to="none"
 )
 
-#como é causal LM, usamos esse collato, dado uma lista de exemplos, retorna um batch pronto para o modelo
-data_collator = DataCollatorForLanguageModeling(
-    tokenizer=tokenizer, mlm=False #serve para criar tensores compatíveis para o modelo (inputs, labels, masks, etc.) e
-)
+data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
 
 trainer = Trainer(
     model=model,
@@ -88,13 +99,31 @@ trainer = Trainer(
     data_collator=data_collator,
 )
 
-#agora que tudo já foi preparado, vamos realizar o treinamento do modelo
+# ---------------------------
+# 🚀 Treinamento
+# ---------------------------
+print("Iniciando treinamento...")
 trainer.train()
 
-#salvando o modelo treinado
-trainer.save_model("biogpt-finetuned-symptom-diagnosis")
-tokenizer.save_pretrained("biogpt-finetuned-symptom-diagnosis")
+# ---------------------------
+# 💾 Salvando modelo
+# ---------------------------
+print("Salvando modelo em:", MODEL_OUTPUT_DIR)
+trainer.save_model(MODEL_OUTPUT_DIR)
+tokenizer.save_pretrained(MODEL_OUTPUT_DIR)
 
-#teste de inferência do modelo com fine-tuning
-generator = pipeline('text-generation', model="biogpt-finetuned-symptom-diagnosis", tokenizer=tokenizer)
-generator("The pacient presents the following symptoms: fever, cough, fatigue.", max_length=100)
+# ---------------------------
+# 🧪 Teste de inferência
+# ---------------------------
+print("Testando inferência com modelo fine-tuned...")
+generator = pipeline(
+    'text-generation',
+    model=BioGptForCausalLM.from_pretrained(MODEL_OUTPUT_DIR),
+    tokenizer=BioGptTokenizer.from_pretrained(MODEL_OUTPUT_DIR),
+    device=0 if torch.cuda.is_available() else -1
+)
+
+test_input = "The pacient presents the following symptoms: fever, cough, fatigue."
+result = generator(test_input, max_length=100)
+print("\n📋 Geração de exemplo:")
+print(result[0]["generated_text"])
