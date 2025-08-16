@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import torch
+import matplotlib.pyplot as plt
 from transformers import (
     BioGptTokenizer, BioGptForCausalLM, TrainingArguments, Trainer,
     DataCollatorForLanguageModeling, pipeline, set_seed
@@ -103,7 +104,27 @@ trainer = Trainer(
 # 🚀 Treinamento
 # ---------------------------
 print("Iniciando treinamento...")
-trainer.train()
+train_result = trainer.train()
+
+# ---------------------------
+# 📊 Geração de gráficos
+# ---------------------------
+metrics = trainer.state.log_history
+
+train_loss = [m["loss"] for m in metrics if "loss" in m]
+eval_loss = [m["eval_loss"] for m in metrics if "eval_loss" in m]
+epochs = list(range(1, len(eval_loss)+1))
+
+plt.figure(figsize=(8,6))
+plt.plot(range(1, len(train_loss)+1), train_loss, label="Loss de Treino")
+plt.plot(epochs, eval_loss, label="Loss de Validação", marker="o")
+plt.xlabel("Passos / Épocas")
+plt.ylabel("Loss")
+plt.title("Curvas de Treinamento e Validação")
+plt.legend()
+plt.grid(True)
+plt.savefig("training_curves.png")
+plt.show()
 
 # ---------------------------
 # 💾 Salvando modelo
