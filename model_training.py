@@ -74,7 +74,6 @@ tokenized_eval = eval_dataset.map(tokenize_function)
 # ---------------------------
 training_args = TrainingArguments(
     output_dir=MODEL_OUTPUT_DIR,
-    evaluation_strategy="epoch",
     learning_rate=LEARNING_RATE,
     per_device_train_batch_size=BATCH_SIZE,
     per_device_eval_batch_size=BATCH_SIZE,
