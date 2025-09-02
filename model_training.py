@@ -79,6 +79,7 @@ training_args = TrainingArguments(
     per_device_train_batch_size=BATCH_SIZE,
     per_device_eval_batch_size=BATCH_SIZE,
     num_train_epochs=EPOCHS,
+    save_strategy="epoch",
     weight_decay=0.01,
     save_total_limit=2,
     logging_dir="./logs",
@@ -104,7 +105,7 @@ trainer = Trainer(
 # 🚀 Treinamento
 # ---------------------------
 print("Iniciando treinamento...")
-train_result = trainer.train()
+train_result = trainer.train(resume_from_checkpoint=True)
 
 # ---------------------------
 # 📊 Geração de gráficos
