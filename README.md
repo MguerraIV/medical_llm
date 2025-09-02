@@ -1,6 +1,6 @@
-# 🧠 Specializing LLMs for Medical Diagnosis: A Fine-Tuning-Based Approach
+# 🧠 Transformers para análise de registros clínicos heterogêneos e especialização de modelos de linguagem no diagnóstico médico
 
-Este repositório contém os artefatos desenvolvidos para a pesquisa de TCC intitulada **“Specializing LLMs for Medical Diagnosis: A Fine-Tuning-Based Approach”**, conduzida por **Mário Guerra** como parte da graduação em Engenharia da Computação pela UPE. A proposta central é investigar o impacto da sobreposição de datasets médicos heterogêneos na performance de **Language Models** aplicados ao diagnóstico clínico.
+Este repositório contém os artefatos desenvolvidos para a pesquisa de TCC intitulada **“Transformers para análise de registros clínicos heterogêneos e especialização de modelos de linguagem no diagnóstico médico”**, conduzida por **Mário Guerra** como parte da graduação em Engenharia da Computação pela UPE. A proposta central é investigar o impacto da sobreposição de datasets médicos heterogêneos na performance de **Language Models** aplicados ao diagnóstico clínico.
 
 ---
 
@@ -17,7 +17,8 @@ Este repositório contém os artefatos desenvolvidos para a pesquisa de TCC inti
 │
 ├── 📒 1_data_preprocessing.ipynb     # Pré-processamento, unificação e enriquecimento dos dados
 ├── 📒 2_data_completion.ipynb        # Geração de dados sintéticos e enriquecimento dos dados
-├── 📒 3_model_training.ipynb         # Preparação dos pares texto-alvo, tokenização e fine-tuning
+├── 📒 3_model_training.py            # Preparação dos pares texto-alvo, tokenização e fine-tuning
+├── 📒 4_model_evaluate.py            # Avaliação do modelo treinado em comparação ao modelo base
 ├── 📂 data/                          # Datasets originais e processados
 ├── 📂 utils/                         # Scripts auxiliares (tokenização, limpeza, etc.)
 ├── Requirements.txt                  # Bibliotecas necessárias para o projeto
@@ -100,7 +101,7 @@ A pesquisa integra e sobrepõe datasets distintos do tipo **disease-symptom**, c
 - **Estratégia de Controle**:
   - Comparação com modelo base (BioGPT sem fine-tuning)
   - Testes com casos reais e simulados
-  - Validação qualitativa por especialistas médicos (etapa futura)
+  - Utilização da estratégia de "LLM-as-a-judge"
 
 ---
 
