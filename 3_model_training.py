@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from transformers import (
     BioGptTokenizer, BioGptForCausalLM, TrainingArguments, Trainer,
-    DataCollatorForSeq2Seq, pipeline, set_seed
+    DataCollatorForLanguageModeling, pipeline, set_seed
 )
 from datasets import Dataset
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
@@ -116,7 +116,7 @@ training_args = TrainingArguments(
     report_to="none"
 )
 
-data_collator = DataCollatorForSeq2Seq(tokenizer=tokenizer, model=model)
+data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
 
 trainer = Trainer(
     model=model,
@@ -131,7 +131,7 @@ trainer = Trainer(
 # 🚀 Treinamento
 # ---------------------------
 print("Iniciando treinamento...")
-train_result = trainer.train(resume_from_checkpoint=True)
+train_result = trainer.train()
 
 # ---------------------------
 # 📊 Curvas de treinamento
