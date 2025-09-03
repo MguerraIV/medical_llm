@@ -39,16 +39,13 @@ def gerar_pares(row):
 
     input_text = f"Given the following symptoms, provide the most likely diagnosis, description, and risk factors.\n\nSymptoms: {', '.join(sintomas)}."
 
-    risk_factors = row["disease_risk_factors"].split(",") if isinstance(row["disease_risk_factors"], str) else []
-    risk_factors = list(dict.fromkeys([rf.strip() for rf in risk_factors if rf.strip()]))
-
     output_text = (
         f"Diagnosis: {row['diseases']}\n\n"
         f"Description: {row['diseases_description']}\n\n"
-        f"Risk Factors:\n- " + "\n- ".join(risk_factors)
+        f"Risk factors: {row['disease_risk_factors']}."
     )
 
-    return {"input": input_text.strip(), "output": output_text.strip(), "label": row["diseases"]}
+    return {"input": input_text.strip(), "output": output_text.strip()}
 
 caso_diagnostico = df.apply(gerar_pares, axis=1).tolist()
 dataset = Dataset.from_list(caso_diagnostico)
@@ -177,7 +174,7 @@ y_pred = []
 
 for ex in test_dataset:
     input_text = ex["input"]
-    expected = ex["label"]
+    expected = ex["output"]
     result = generator(input_text, max_length=200, num_return_sequences=1, temperature=0.7)
     generated = result[0]["generated_text"]
 
