@@ -30,7 +30,7 @@ COLUNAS = df.columns
 
 def gerar_pares(row):
     sintomas = [col.replace("_", " ") for col in COLUNAS if row[col] == 1]
-    input_text = f"The pacient presents the following symptoms: {', '.join(sintomas)}."
+    input_text = f"Given the following symptoms, provide the most likely diagnosis, description, and risk factors.\n\nSymptoms: {', '.join(sintomas)}."
     output_text = f'''
         Diagnosis: {row['diseases']}.
         Description: {row['diseases_description']}.
