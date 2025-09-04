@@ -58,7 +58,7 @@ A pesquisa integra e sobrepõe datasets distintos do tipo **disease-symptom**, c
 - Construção de pares `input-text` → `diagnóstico esperado`.
 - Exemplo:
   ```
-  Input: The pacient presents the following symptoms: anxiety and nervousness, breathing fast, chest tightness.
+  Input: Given the following symptoms, provide the most likely diagnosis, description, and risk factors.\n\nSymptoms: anxiety and nervousness, breathing fast, chest tightness.
 
   Output: 
     Diagnosis: Panic Disorder.
