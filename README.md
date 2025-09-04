@@ -18,7 +18,7 @@ Este repositório contém os artefatos desenvolvidos para a pesquisa de TCC inti
 ├── 📒 1_data_preprocessing.ipynb     # Pré-processamento, unificação e enriquecimento dos dados
 ├── 📒 2_data_completion.ipynb        # Geração de dados sintéticos e enriquecimento dos dados
 ├── 📒 3_model_training.py            # Preparação dos pares texto-alvo, tokenização e fine-tuning
-├── 📒 4_model_evaluate.py            # Avaliação do modelo treinado em comparação ao modelo base
+├── 📒 4_model_evaluate.ipynb           # Avaliação do modelo treinado em comparação ao modelo base
 ├── 📂 data/                          # Datasets originais e processados
 ├── 📂 utils/                         # Scripts auxiliares (tokenização, limpeza, etc.)
 ├── Requirements.txt                  # Bibliotecas necessárias para o projeto
@@ -91,17 +91,43 @@ A pesquisa integra e sobrepõe datasets distintos do tipo **disease-symptom**, c
 
 ## 📏 Avaliação de Desempenho
 
-- **Métricas aplicadas**:
-  - Accuracy
-  - F1-Score
-  - Recall
-  - AUROC
-  - ROUGE (em respostas explicativas)
+A avaliação do modelo treinado é conduzida de forma **híbrida**, combinando métricas quantitativas tradicionais com análise qualitativa de outputs médicos.
 
-- **Estratégia de Controle**:
-  - Comparação com modelo base (BioGPT sem fine-tuning)
-  - Testes com casos reais e simulados
-  - Utilização da estratégia de "LLM-as-a-judge"
+---
+
+### **1️⃣ Métricas Aplicadas**
+
+- **Accuracy (Acurácia)**: mede a proporção de diagnósticos corretos fornecidos pelo modelo em relação ao gabarito clínico.
+- **F1-Score**: combina precisão e recall para avaliar a performance em classificação de diagnósticos, penalizando falsos positivos e falsos negativos.
+- **Recall**: indica a capacidade do modelo de identificar corretamente todos os diagnósticos relevantes presentes nos casos de teste.
+- **AUROC (Área sob a Curva ROC)**: avalia a separação entre diagnósticos corretos e incorretos em um cenário probabilístico, útil para análise de sensibilidade do modelo.
+- **ROUGE / BLEU (em respostas explicativas)**: mede similaridade textual entre descrições e fatores de risco gerados pelo modelo e os textos de referência, garantindo que a argumentação clínica seja coerente e completa.
+
+---
+
+### **2️⃣ Estratégia de Controle**
+
+- **Comparação com modelo base**:  
+  O desempenho do THERA é comparado com o modelo **BioGPT sem fine-tuning**, permitindo quantificar o ganho obtido pelo fine-tuning em tarefas de diagnóstico médico.
+
+- **Testes com casos reais e simulados**:  
+  O conjunto de avaliação inclui **casos clínicos reais** e **casos sintéticos gerados para cobrir cenários raros ou críticos**, garantindo robustez do modelo.
+
+- **LLM-as-a-judge**:  
+  Além das métricas automáticas, utilizamos uma estratégia de avaliação **qualitativa com LLMs**, nos quais um modelo de linguagem instrucionado analisa os outputs do THERA e do modelo base, fornecendo **feedback sobre coerência clínica, completude e relevância dos fatores de risco**.
+
+- **Limpeza e normalização de outputs**:  
+  Antes da avaliação, os outputs são processados para extrair **Diagnosis, Description e Risk Factors**, removendo duplicatas e estruturando os fatores de risco em bullet points, garantindo consistência para métricas automáticas e comparação humana.
+
+---
+
+### **3️⃣ Objetivo da Avaliação**
+
+O objetivo desta abordagem híbrida é **quantificar e qualificar** o desempenho do modelo THERA, identificando:
+
+- Melhorias obtidas pelo fine-tuning em relação ao modelo base.  
+- Coerência clínica e completude das descrições médicas.  
+- Limites do modelo em cenários complexos ou atípicos.  
 
 ---
 
@@ -143,10 +169,11 @@ A fusão de datasets médicos complementares, aliada ao enriquecimento textual, 
    pip install -r requirements.txt
    ```
 
-3. Execute os notebooks na ordem:
+3. Execute os arquivos na ordem:
    - `1_data_preprocessing.ipynb`
    - `2_data_completion_biogpt.ipynb`
-   - `3_model_training.ipynb`
+   - `3_model_training.py`
+   - `4_model_evaluate.ipynb`
 
 ---
 

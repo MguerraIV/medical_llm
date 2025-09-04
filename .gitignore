@@ -1,5 +1,6 @@
 data/Final_Augmented_dataset_Diseases_and_Symptoms.csv
 data/excel/kaggle_dataset_ds.xlsx
 data/merged_dataset.csv
+data/base_final_excel.xlsx
 artigos_base/
-biogpt-finetuned-symptom-diagnosis
+thera-finetuned-symptom-diagnosis
