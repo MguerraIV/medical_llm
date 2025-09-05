@@ -84,8 +84,8 @@ A pesquisa integra e sobrepõe datasets distintos do tipo **disease-symptom**, c
 - **Paradigma de ajuste**: Fine-tuning supervisionado
 - **Hiperparâmetros principais**:
   - Learning rate: `5e-5`
-  - Batch size: `3`
-  - Epochs: `3`
+  - Batch size: `6`
+  - Epochs: `5`
 
 ---
 
